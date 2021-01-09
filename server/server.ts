@@ -13,48 +13,75 @@ app.use(express.json());
 app.get("/restaurants/api/get-all", async (req, res) => {
   const result = await db.query("select * from restaurants");
 
-  console.log(result);
   res.status(200);
   res.json({
+    status: "success",
+    results: result.rows.length,
     data: {
-      restaurants: "all the restaurants",
+      restaurants: result.rows,
     },
   });
 });
 
 // get single restaurant
-app.get("/restaurants/api/get-single-restaurant/:id", (req, res) => {
-  console.log(res);
+app.get("/restaurants/api/get-single-restaurant/:id", async (req, res) => {
+  const result = await db.query("select * from restaurants where id=$1", [
+    req.params.id,
+  ]);
   res.status(200).json({
     status: "success",
     data: {
-      restaurant: "Single restaurant",
+      restaurant:
+        result.rows.length !== 0
+          ? result.rows
+          : "No restaurant with that id found",
     },
   });
 });
 
 // create restaurant
-app.post("/restaurants/api/create", (req, res) => {
-  console.log(res);
-  res.status(201).json({
-    status: "success",
-    data: {
-      restaurant: "Create restaurant",
-    },
-  });
+app.post("/restaurants/api/create", async (req, res) => {
+  const { name, location, price_range: priceRange } = await req.body;
+
+  try {
+    const results = await db.query(
+      "INSERT INTO restaurants(name, location, price_range) values($1, $2, $3) returning *",
+      [name, location, priceRange]
+    );
+    res.status(201).json({
+      status: "success",
+      data: {
+        restaurant: results.rows,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+    res.json({
+      status: "Failed to insert into database",
+    });
+  }
 });
 
 // update restaurant
-app.put("/restaurants/api/update/:id", (req, res) => {
-  console.log(res);
-  res.status(201).json({
-    status: "success",
-    data: {
-      restaurant: "Update restaurant",
-    },
-  });
+app.put("/restaurants/api/update/:id", async (req, res) => {
+  const { name, location, price_range: priceRange } = await req.body;
+  try {
+    const results = await db.query(
+      "UPDATE restaurants SET name=$1, location=$2, price_range=$3 where id=$4 returning *",
+      [name, location, priceRange, req.params.id]
+    );
+    res.status(201).json({
+      status: "success",
+      data: {
+        restaurant: results.rows,
+      },
+    });
+  } catch (err) {
+    console.log(err);
+  }
 });
 
+// delete restaurant
 app.delete("/restaurants/api/delete/:id", (req, res) => {
   res.status(204).json({
     status: "Delete restaruatn",
