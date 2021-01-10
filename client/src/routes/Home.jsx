@@ -1,11 +1,9 @@
 import React from "react";
-import AddRestaurant from "../components/AddRestaurant";
 import Header from "../components/Header";
+import AddRestaurant from "../components/AddRestaurant";
 import RestaurantList from "../components/RestaurantList";
 
-interface HomeProps {}
-
-const Home: React.FC<HomeProps> = () => {
+const Home = () => {
   return (
     <div>
       <Header />

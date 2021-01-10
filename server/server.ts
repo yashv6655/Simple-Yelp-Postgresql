@@ -2,12 +2,17 @@ require("dotenv").config();
 const express = require("express");
 const morgan = require("morgan");
 const db = require("./db");
-
+const cors = require("cors");
 const app = express();
 
 const port = process.env.PORT || "4000";
 
 app.use(express.json());
+app.use(
+  cors({
+    origin: "http://localhost:3000",
+  })
+);
 
 // fetching all restaurants
 app.get("/restaurants/api/get-all", async (req, res) => {
@@ -24,7 +29,7 @@ app.get("/restaurants/api/get-all", async (req, res) => {
 });
 
 // get single restaurant
-app.get("/restaurants/api/get-single-restaurant/:id", async (req, res) => {
+app.get("/restaurants/api/:id", async (req, res) => {
   const { id } = req.params;
   const result = await db.query("SELECT * FROM restaurants WHERE id=$1", [id]);
   res.status(200).json({
@@ -62,7 +67,7 @@ app.post("/restaurants/api/create", async (req, res) => {
 });
 
 // update restaurant
-app.put("/restaurants/api/update/:id", async (req, res) => {
+app.put("/restaurants/api/:id", async (req, res) => {
   const { name, location, price_range: priceRange } = await req.body;
   const { id } = req.params;
   try {
@@ -82,7 +87,7 @@ app.put("/restaurants/api/update/:id", async (req, res) => {
 });
 
 // delete restaurant
-app.delete("/restaurants/api/delete/:id", async (req, res) => {
+app.delete("/restaurants/api/:id", async (req, res) => {
   const { id } = req.params;
   try {
     const result = await db.query("DELETE FROM restaurants WHERE id=$1", [id]);
